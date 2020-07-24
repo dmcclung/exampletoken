@@ -7,8 +7,8 @@ contract SocialToken is ERC20 {
 
     string private _version = "1.0";
 
-    constructor(uint256 initialSupply) public ERC20("Social", "SCL") {
-        _mint(msg.sender, initialSupply);
+    constructor() public ERC20("Social", "SCL") {
+        _mint(msg.sender, 5 * 10**6);
     }
 
     /**
