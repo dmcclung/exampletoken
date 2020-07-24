@@ -11,5 +11,8 @@
   "bugs": {
     "url": "https://github.com/dmcclung/socialtoken/issues"
   },
-  "homepage": "https://github.com/dmcclung/socialtoken#readme"
+  "homepage": "https://github.com/dmcclung/socialtoken#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.1.0"
+  }
 }
