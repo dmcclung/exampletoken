@@ -3,11 +3,11 @@ pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract SocialToken is ERC20 {
+contract Token is ERC20 {
 
     string private _version = "1.0";
 
-    constructor() public ERC20("Social", "SCL") {
+    constructor() public ERC20("ExampleToken", "EXT") {
         // initial supply is 50mil reserved to owner
         // 10**4 is reserved for small give aways
         // tokenCap is 150mil
