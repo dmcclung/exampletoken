@@ -13,7 +13,8 @@ contract Token is ERC20Capped {
 
     uint256 private _reservedSupply = 50 * 10**6 * 10**18;
     uint256 private _faucetSupply = 1 * 10**4 * 10**18;
-    uint256 private _tokenCap = 150 * 10**6 * 10**18;
+    uint256 private _tokenCap = 200 * 10**6 * 10**18;
+    uint256 private _tokenFloor = 100 * 10**6 * 10**18;
     uint256 private _exchangeRate = 10000;
 
     string private _tokenName = "ExampleToken";
@@ -30,6 +31,7 @@ contract Token is ERC20Capped {
     address private _faucetSupplyAddress;
 
     event CreateEXT(address indexed _to, uint256 _value);
+    event Refund(address indexed _to, uint256 _ethValue, uint256 _tokenBal);
 
     constructor(uint256 tokenSaleStartBlock, uint256 tokenSaleEndBlock, address payable ethAddress,
         address reservedSupplyAddress, address faucetSupplyAddress) public
@@ -70,11 +72,29 @@ contract Token is ERC20Capped {
      * @dev Sends collected eth to configured address
      */
     function finalizeSale() external isOpen {
-        // cannot finalize until end block
         require(block.number >= _tokenSaleEndBlock, "Token sale has not ended");
+        require(msg.sender == _ethAddress, "Only the ETH fund can finalize");
+        require(totalSupply() >= _tokenFloor, "Sale has minimum to be considered successful");
 
         _isFinal = true;
         _ethAddress.transfer(address(this).balance);
+    }
+
+    /**
+     * @dev ETH is refundable if token sale fails
+     */
+    function refund() external isOpen {
+        require(block.number >= _tokenSaleEndBlock, "Token sale has not ended");
+        require(totalSupply() < _tokenFloor, "Sale was successful");
+        require(msg.sender != _reservedSupplyAddress, "Reserved supply cannot be refunded");
+        require(msg.sender != _faucetSupplyAddress, "Faucet supply cannot be refunded");
+
+        uint256 bal = balanceOf(msg.sender);
+        _burn(msg.sender, bal);
+
+        uint256 ethVal = bal / _exchangeRate;
+        emit Refund(msg.sender, ethVal, bal);
+        msg.sender.transfer(ethVal);
     }
 
     /**

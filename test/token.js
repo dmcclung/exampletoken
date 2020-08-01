@@ -5,6 +5,7 @@ contract("The Token contract", async accounts => {
     let contract;
 
     beforeEach(async () => {
+        // TODO: Need to include addresses and new constructor args        
         contract = await Token.new(2, 5);
     });
 
@@ -41,7 +42,7 @@ contract("The Token contract", async accounts => {
 
     it("should return the cap", async () => {
         const cap = await contract.cap();
-        assert.equal(cap, 150 * 10**6 * 10**18);
+        assert.equal(cap, 200 * 10**6 * 10**18);
     });
     
     it("should reject token requests over the cap", async () => {        
