@@ -5,8 +5,11 @@ contract("The Token contract", async accounts => {
     let contract;
 
     beforeEach(async () => {
-        // TODO: Need to include addresses and new constructor args        
-        contract = await Token.new(2, 5);
+        const ethAddress = accounts[2];
+        const reservedSupplyAddress = "0x5245";
+        const faucetSupplyAddress = "0x8910";
+
+        contract = await Token.new(2, 5, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
     });
 
     it("should return the version", async () => {
@@ -24,9 +27,25 @@ contract("The Token contract", async accounts => {
         assert.equal(tokenSaleEndBlock, 5);
     });
 
-    it("should not close the sale if already closed", async () => {
-        assert.fail("Not implemented yet");
+    it("should not finalize the sale if not ended", async () => {
+        await contract.finalizeSale();        
     });
+
+    it("should not finalize the sale if caller is not the final address", async () => {
+        await contract.finalizeSale();
+    });
+
+    it("should not finalize the sale if minimum token supply is not met", async () => {
+        await contract.finalizeSale();
+    });
+
+    it("should finalize the sale successfully if conditions are met", async () => {
+        await contract.finalizeSale();
+        const final = await contract.isFinal();
+        assert.equal(final, true);
+
+        // check for eth transfered
+    }); 
 
     it("should allocate tokens to purchases equal to the exchange rate", async () => {
         assert.fail("Not implemented yet");
