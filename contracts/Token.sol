@@ -74,7 +74,7 @@ contract Token is ERC20Capped {
     function finalizeSale() external isOpen {
         require(block.number >= _tokenSaleEndBlock, "Token sale has not ended");
         require(msg.sender == _ethAddress, "Only the ETH fund can finalize");
-        require(totalSupply() >= _tokenFloor, "Sale has minimum to be considered successful");
+        require(totalSupply() >= _tokenFloor, "Token sale did not meet minimum minting requirement");
 
         _isFinal = true;
         _ethAddress.transfer(address(this).balance);
