@@ -7,7 +7,7 @@
     "url": "git+https://github.com/dmcclung/exampletoken.git"
   },
   "author": "Dylan McClung",
-  "license": "GPLv3",
+  "license": "GPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/dmcclung/exampletoken/issues"
   },
