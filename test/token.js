@@ -71,9 +71,11 @@ contract("The Token contract", async accounts => {
         const blockHeight = await web3.eth.getBlockNumber();        
 
         const tokenCreatorAddress = accounts[4];
-        const contract = await Token.new(blockHeight, blockHeight + 20, ethAddress, reservedSupplyAddress, faucetSupplyAddress);        
+        // TODO: add exchange rate as a contract variable
+        // 100 mil tokens to eth, send the one transaction, may not need to automine then
+        const contract = await Token.new(blockHeight, blockHeight + 10, ethAddress, reservedSupplyAddress, faucetSupplyAddress);        
         // mint minimum tokens        
-        await contract.createTokens({from: tokenCreatorAddress, value: 100000});
+        await contract.createTokens({from: tokenCreatorAddress, value: web3.utils.toWei("1000")});
 
         // Advance block height to end sale
         const advanceBlockHeight = () => {
@@ -90,7 +92,7 @@ contract("The Token contract", async accounts => {
             });
         };
         
-        await Promise.all([...Array(20)].map(() => advanceBlockHeight()));
+        await Promise.all([...Array(10)].map(() => advanceBlockHeight()));
 
         // Remember only the ethAddress can finalize        
         await contract.finalizeSale({from: ethAddress});
