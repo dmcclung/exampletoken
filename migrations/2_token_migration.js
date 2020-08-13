@@ -6,7 +6,8 @@ module.exports = function(deployer) {
   const faucetSupplyAddress = "0xD3C2a70878aA5744caA292207ef485B9152416ac";
   const tokenSaleStartBlock = 10609007;
   const tokenSaleEndBlock = 12186007;
+  const exchangeRate = 10000;
 
-  deployer.deploy(Token, tokenSaleStartBlock, tokenSaleEndBlock, 
+  deployer.deploy(Token, tokenSaleStartBlock, tokenSaleEndBlock, exchangeRate,
     ethAddress, reservedSupplyAddress, faucetSupplyAddress);
 };

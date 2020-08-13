@@ -8,13 +8,13 @@ contract("The Token contract", async accounts => {
     let reservedSupplyAddress;
     let faucetSupplyAddress;    
 
-    beforeEach(async () => {
+    before(async () => {
         ethAddress = accounts[1];
         reservedSupplyAddress = accounts[2];
         faucetSupplyAddress = accounts[3];
 
-        contract = await Token.new(0, 20000, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
-    });    
+        contract = await Token.new(0, 20000, 10000, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
+    });
 
     it("should return the version", async () => {
         const version = await contract.version();
@@ -46,7 +46,7 @@ contract("The Token contract", async accounts => {
         faucetSupplyAddress = accounts[3];
         
         // setup the token contract to be in an end state
-        const contract = await Token.new(0, 0, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
+        const contract = await Token.new(0, 0, 10000, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
         assert.rejects(contract.finalizeSale(), /revert Only the ETH fund can finalize/);
     });
 
@@ -57,7 +57,7 @@ contract("The Token contract", async accounts => {
         reservedSupplyAddress = accounts[2];
         faucetSupplyAddress = accounts[3];
                 
-        const contract = await Token.new(0, 0, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
+        const contract = await Token.new(0, 0, 10000, ethAddress, reservedSupplyAddress, faucetSupplyAddress);
         assert.rejects(contract.finalizeSale({from: ethAddress}), /revert Token sale did not meet minimum/);
     });
 
@@ -66,16 +66,17 @@ contract("The Token contract", async accounts => {
         const faucetSupplyAddress = accounts[8];
 
         const ethAddress = accounts[1];
-        const ethAddressInitialBalance = await web3.eth.getBalance(ethAddress);
+        const ethAddressInitialBalance = await web3.eth.getBalance(ethAddress);        
         
         const blockHeight = await web3.eth.getBlockNumber();        
 
         const tokenCreatorAddress = accounts[4];
-        // TODO: add exchange rate as a contract variable
-        // 100 mil tokens to eth, send the one transaction, may not need to automine then
-        const contract = await Token.new(blockHeight, blockHeight + 10, ethAddress, reservedSupplyAddress, faucetSupplyAddress);        
+        
+        // exchange rate is parameterized to allow tests to be setup easily        
+        // assumption that ganache is creating a new block for every transaction
+        const contract = await Token.new(blockHeight, blockHeight + 10, 100000000, ethAddress, reservedSupplyAddress, faucetSupplyAddress);        
         // mint minimum tokens        
-        await contract.createTokens({from: tokenCreatorAddress, value: web3.utils.toWei("1000")});
+        await contract.createTokens({from: tokenCreatorAddress, value: web3.utils.toWei("1", "ether")});
 
         // Advance block height to end sale
         const advanceBlockHeight = () => {
@@ -97,41 +98,39 @@ contract("The Token contract", async accounts => {
         // Remember only the ethAddress can finalize        
         await contract.finalizeSale({from: ethAddress});
         
-        /*const final = await contract.isFinal();
-        assert.equal(final, true);
+        const final = await contract.isFinal();
+        assert.ok(final);
                 
-        const ethAddressFinalBalance = await web3.eth.getBalance(ethAddress);
-        assert.equal(ethAddressFinalBalance - ethAddressInitialBalance, 100000);        */
+        const ethAddressFinalBalance = await web3.eth.getBalance(ethAddress);        
+
+        const ethAddressIncrease = web3.utils.toBN(ethAddressFinalBalance - ethAddressInitialBalance);
+        const ethAddressIncreaseFromWei = web3.utils.fromWei(ethAddressIncrease);
+        assert.ok(ethAddressIncreaseFromWei > 0.99);
     }); 
 
-    it("should allocate tokens to purchases equal to the exchange rate", async () => {
-        //TODO: create tokens and check balance
-        assert.fail("Not implemented yet");
+    it("should reject token requests over the cap", async () => {    
+        const tokenCreatorAddress = accounts[4];    
+        const contract = await Token.new(0, 200000, 100000000, ethAddress, reservedSupplyAddress, faucetSupplyAddress);        
+        // mint minimum tokens        
+        await contract.createTokens({from: tokenCreatorAddress, value: web3.utils.toWei("10", "ether")});        
     });
+
+    it("should allocate tokens to purchases equal to the exchange rate", async () => {
+        const tokenCreatorAddress = accounts[4];
+        await contract.createTokens({from: tokenCreatorAddress, value: web3.utils.toWei("1", "ether")});
+        
+        const balance = await contract.balanceOf(tokenCreatorAddress);
+        assert.strictEqual(balance, web3.utils.toBN(10000));        
+    });
+
+    it("should return the balance allocated", async () => {
+        const balance = await contract.balanceOf(reservedSupplyAddress);
+        assert.strictEqual(balance, web3.utils.toBN(10000000));
+    }); 
 
     it("should not allow payable to a fallback or receive method", async () => {
         //TODO: send eth transaction to contract address
         assert.fail("Not implemented yet");
     });
-
-    it("should return the balance allocated", async () => {
-        //TODO: check balance of reserved supply
-        assert.fail("Not implemented yet");
-    });    
     
-    it("should reject token requests over the cap", async () => {        
-        //TODO: mint enough tokens to get to cap
-        assert.fail("Not implemented yet");
-    });    
-
-    it("should be able to get 1 wei tokens from faucet", async () => {
-        //TODO: call faucet method and check balance
-        assert.fail("Not implemented yet");
-    });
-
-    it("should not be able to get tokens from faucet once exhausted", async () => {
-        //TODO: deploy a contract with a variable faucet amount
-        //
-        assert.fail("Not implemented yet");
-    });
 });

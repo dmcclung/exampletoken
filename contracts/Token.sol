@@ -11,37 +11,38 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract Token is ERC20Capped {
     string private _version = "1.0";
 
-    uint256 private _reservedSupply = 50 * 10**6 * 10**18;
-    uint256 private _faucetSupply = 1 * 10**4 * 10**18;
     uint256 private _tokenCap = 200 * 10**6 * 10**18;
+    uint256 private _faucetSupply = 1 * 10**4 * 10**18;    
     uint256 private _tokenFloor = 100 * 10**6 * 10**18;
-    uint256 private _exchangeRate = 10000;
+    uint256 private _reservedSupply = 50 * 10**6 * 10**18;    
 
-    string private _tokenName = "ExampleToken";
     string private _tokenSymbol = "EXT";
+    string private _tokenName = "ExampleToken";    
 
     // Token sale has a start and end date, final means that the sale has ended and
     // the ETH collected has been sent to the contract owner's configured address
     bool private _isFinal;
-    uint256 private _tokenSaleStartBlock;
+    uint256 private _exchangeRate;
     uint256 private _tokenSaleEndBlock;
     address payable private _ethAddress;
+    uint256 private _tokenSaleStartBlock;
 
-    address private _reservedSupplyAddress;
     address private _faucetSupplyAddress;
+    address private _reservedSupplyAddress;
 
     event CreateEXT(address indexed _to, uint256 _value);
     event Refund(address indexed _to, uint256 _ethValue, uint256 _tokenBal);
 
-    constructor(uint256 tokenSaleStartBlock, uint256 tokenSaleEndBlock, address payable ethAddress,
-        address reservedSupplyAddress, address faucetSupplyAddress) public
+    constructor(uint256 tokenSaleStartBlock, uint256 tokenSaleEndBlock, uint256 exchangeRate, 
+        address payable ethAddress, address reservedSupplyAddress, address faucetSupplyAddress) public
         ERC20(_tokenName, _tokenSymbol) ERC20Capped(_tokenCap)  {
         _isFinal = false;
-        _tokenSaleStartBlock = tokenSaleStartBlock;
-        _tokenSaleEndBlock = tokenSaleEndBlock;
         _ethAddress = ethAddress;
-        _reservedSupplyAddress = reservedSupplyAddress;
+        _exchangeRate = exchangeRate;
+        _tokenSaleEndBlock = tokenSaleEndBlock;
+        _tokenSaleStartBlock = tokenSaleStartBlock;
         _faucetSupplyAddress = faucetSupplyAddress;
+        _reservedSupplyAddress = reservedSupplyAddress;        
 
         _mint(_reservedSupplyAddress, _reservedSupply);
         emit CreateEXT(_reservedSupplyAddress, _reservedSupply);
